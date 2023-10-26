@@ -21,7 +21,7 @@ use super::PoolService;
 use super::types::*;
 
 use self::log_derive::logfn;
-use ursa::bls::{Bls, Generator, MultiSignature, VerKey};
+use indy_blssignatures::{Bls, Generator, MultiSignature, VerKey};
 use self::node::{Node, TrieDB};
 use rust_base58::FromBase58;
 use crate::services::pool::Nodes;

@@ -25,7 +25,7 @@ use rust_base58::{FromBase58, ToBase58};
 use crate::services::pool::types::{LedgerStatus, RemoteNode};
 use indy_utils::crypto::ed25519_sign;
 
-use super::ursa::bls::VerKey;
+use super::indy_blssignatures::VerKey;
 use super::zmq;
 use indy_api_types::{PoolHandle, CommandHandle};
 

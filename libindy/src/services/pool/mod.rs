@@ -1,5 +1,5 @@
 extern crate hex;
-extern crate ursa;
+extern crate indy_blssignatures;
 extern crate rand;
 extern crate rmp_serde;
 extern crate time;
@@ -32,7 +32,7 @@ use crate::utils::environment;
 use crate::services::pool::events::{COMMAND_EXIT, COMMAND_CONNECT, COMMAND_REFRESH};
 use indy_api_types::{CommandHandle, PoolHandle};
 use indy_utils::{next_command_handle, next_pool_handle};
-use ursa::bls::VerKey;
+use indy_blssignatures::VerKey;
 
 mod catchup;
 mod commander;
@@ -610,7 +610,7 @@ mod tests {
 
         use super::*;
 
-        use ursa::bls::{Generator, SignKey, VerKey};
+        use indy_blssignatures::{Generator, SignKey, VerKey};
         use crate::services::pool::request_handler::DEFAULT_GENERATOR;
 
         pub static POLL_TIMEOUT: i64 = 1_000; /* in ms */

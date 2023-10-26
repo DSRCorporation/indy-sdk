@@ -27,7 +27,7 @@ use crate::services::pool::state_proof;
 use crate::services::pool::types::CatchupRep;
 use crate::services::pool::types::HashableValue;
 
-use super::ursa::bls::Generator;
+use super::indy_blssignatures::Generator;
 
 use std::hash::{Hash, Hasher};
 use log_derive::logfn;
