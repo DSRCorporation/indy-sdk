@@ -3,12 +3,11 @@ extern crate sodiumoxide;
 use crate::indy_api_types::errors::prelude::*;
 use libc::size_t;
 
-use zeroize::Zeroize;
+use zeroize_derive::{ZeroizeOnDrop, Zeroize};
 
 pub const SEEDBYTES: usize = 32; // randombytes_seedbytes
 
-#[derive(Zeroize)]
-#[zeroize(drop)]
+#[derive(Zeroize, ZeroizeOnDrop)]
 pub struct Seed([u8; SEEDBYTES]);
 
 impl Seed {

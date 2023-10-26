@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use ursa::cl::{
+use anoncreds_clsignatures::{
     CredentialSignature,
     RevocationRegistry,
     SignatureCorrectnessProof,

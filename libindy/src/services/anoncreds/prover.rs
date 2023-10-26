@@ -1,17 +1,17 @@
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 
-use ursa::cl::{
+use anoncreds_clsignatures::{
     BlindedCredentialSecrets,
     BlindedCredentialSecretsCorrectnessProof,
     CredentialPublicKey,
     CredentialSecretsBlindingFactors,
-    MasterSecret,
+    LinkSecret,
     SubProofRequest,
 };
-use ursa::cl::issuer::Issuer as CryptoIssuer;
-use ursa::cl::prover::Prover as CryptoProver;
-use ursa::cl::verifier::Verifier as CryptoVerifier;
+use anoncreds_clsignatures::Issuer as CryptoIssuer;
+use anoncreds_clsignatures::Prover as CryptoProver;
+use anoncreds_clsignatures::Verifier as CryptoVerifier;
 
 use crate::domain::anoncreds::credential::{AttributeValues, Credential};
 use crate::domain::anoncreds::credential_attr_tag_policy::CredentialAttrTagPolicy;
@@ -39,10 +39,10 @@ impl Prover {
         Prover {}
     }
 
-    pub fn new_master_secret(&self) -> IndyResult<MasterSecret> {
+    pub fn new_master_secret(&self) -> IndyResult<LinkSecret> {
         trace!("new_master_secret >>> ");
 
-        let master_secret = CryptoProver::new_master_secret()?;
+        let master_secret = CryptoProver::new_link_secret()?;
 
         trace!("new_master_secret <<< master_secret: {:?} ", secret!(&master_secret));
 
@@ -51,7 +51,7 @@ impl Prover {
 
     pub fn new_credential_request(&self,
                                   cred_def: &CredentialDefinition,
-                                  master_secret: &MasterSecret,
+                                  master_secret: &LinkSecret,
                                   credential_offer: &CredentialOffer) -> IndyResult<(BlindedCredentialSecrets,
                                                                                      CredentialSecretsBlindingFactors,
                                                                                      BlindedCredentialSecretsCorrectnessProof)> {
@@ -78,7 +78,7 @@ impl Prover {
     pub fn process_credential(&self,
                               credential: &mut Credential,
                               cred_request_metadata: &CredentialRequestMetadata,
-                              master_secret: &MasterSecret,
+                              master_secret: &LinkSecret,
                               cred_def: &CredentialDefinition,
                               rev_reg_def: Option<&RevocationRegistryDefinitionV1>) -> IndyResult<()> {
         trace!("process_credential >>> credential: {:?}, cred_request_metadata: {:?}, master_secret: {:?}, cred_def: {:?}, rev_reg_def: {:?}",
@@ -106,7 +106,7 @@ impl Prover {
                         credentials: &HashMap<String, Credential>,
                         proof_req: &ProofRequest,
                         requested_credentials: &RequestedCredentials,
-                        master_secret: &MasterSecret,
+                        master_secret: &LinkSecret,
                         schemas: &HashMap<SchemaId, SchemaV1>,
                         cred_defs: &HashMap<CredentialDefinitionId, CredentialDefinition>,
                         rev_states: &HashMap<String, HashMap<u64, RevocationState>>) -> IndyResult<Proof> {
@@ -810,7 +810,7 @@ mod tests {
 
         fn _proof_req() -> ProofRequestPayload {
             ProofRequestPayload {
-                nonce: ursa::cl::new_nonce().unwrap(),
+                nonce: anoncreds_clsignatures::new_nonce().unwrap(),
                 name: "Job-Application".to_string(),
                 version: "0.1".to_string(),
                 requested_attributes: hashmap!(

@@ -8,7 +8,7 @@ edition = "2018"
 
 [features]
 default = ["casting_errors"]
-casting_errors = ["openssl", "rust-base58", "rusqlite", "zmq", "ursa", "rusqlite"]
+casting_errors = ["openssl", "rust-base58", "rusqlite", "zmq", "anoncreds-clsignatures", "rusqlite"]
 
 [dependencies]
 failure = "0.1.6"
@@ -22,10 +22,11 @@ serde_json = "1.0.40"
 serde_derive = "1.0.99"
 zmq = {version = "0.9.1", optional = true}
 
-[dependencies.ursa]
-version =  "0.3.2"
+[dependencies.anoncreds-clsignatures]
+version =  "=0.2.3"
 optional = true
-features = ["logger"]
+git = "ssh://git@gitlab.dsr-corporation.com/dsr-blockchain/anoncreds-clsignatures-rs.git"
+# features = ["logger"]
 
 [target.'cfg(any(target_os = "android", target_os = "ios"))'.dependencies]
 rusqlite = { version = "0.25.3", features=["bundled"], optional = true }

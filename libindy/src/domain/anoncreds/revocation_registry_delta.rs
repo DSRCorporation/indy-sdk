@@ -1,4 +1,4 @@
-use ursa::cl::RevocationRegistryDelta as RegistryDelta;
+use anoncreds_clsignatures::RevocationRegistryDelta as RegistryDelta;
 
 use indy_api_types::validation::Validatable;
 

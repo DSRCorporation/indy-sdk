@@ -3174,7 +3174,7 @@ mod high_cases {
                                                      &anoncreds::schemas_for_proof(),
                                                      &anoncreds::cred_defs_for_proof(),
                                                      "{}");
-            assert_code!(ErrorCode::CommonInvalidStructure, res);
+            assert_code!(ErrorCode::CommonInvalidState, res);
 
             wallet::close_wallet(wallet_handle).unwrap();
         }
@@ -4146,7 +4146,7 @@ mod medium_cases {
                                                               &other_credential_offer,
                                                               &issuer1_gvt_credential_def,
                                                               COMMON_MASTER_SECRET);
-            assert_code!(ErrorCode::CommonInvalidStructure, res);
+            assert_code!(ErrorCode::CommonInvalidState, res);
 
             wallet::close_wallet(wallet_handle).unwrap();
         }
@@ -4167,7 +4167,7 @@ mod medium_cases {
                                                           &anoncreds::xyz_credential_values_json(),
                                                           None,
                                                           None);
-            assert_code!(ErrorCode::CommonInvalidStructure, res);
+            assert_code!(ErrorCode::CommonInvalidState, res);
 
             wallet::close_wallet(wallet_handle).unwrap();
         }

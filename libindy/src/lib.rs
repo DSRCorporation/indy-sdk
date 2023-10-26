@@ -26,7 +26,7 @@ extern crate rmp_serde;
 #[macro_use]
 extern crate lazy_static;
 
-extern crate ursa;
+extern crate anoncreds_clsignatures;
 extern crate rlp;
 extern crate time;
 extern crate libc;

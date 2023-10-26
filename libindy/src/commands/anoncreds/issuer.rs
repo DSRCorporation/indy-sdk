@@ -2,12 +2,13 @@ use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
 
-use ursa::cl::{
+use anoncreds_clsignatures::{
     new_nonce,
+    CredentialKeyCorrectnessProof,
+    CredentialPrivateKey,
     RevocationRegistryDelta as CryptoRevocationRegistryDelta,
     Witness,
 };
-use ursa::cl::{CredentialKeyCorrectnessProof, CredentialPrivateKey};
 
 use crate::commands::{Command, CommandExecutor, BoxedCallbackStringStringSend};
 use crate::commands::anoncreds::AnoncredsCommand;
@@ -372,8 +373,8 @@ impl IssuerCommandExecutor {
                                                         tag: &str,
                                                         signature_type: SignatureType,
                                                         res: (crate::domain::anoncreds::credential_definition::CredentialDefinitionData,
-                                                              ursa::cl::CredentialPrivateKey,
-                                                              ursa::cl::CredentialKeyCorrectnessProof)) -> IndyResult<(String, String)> {
+                                                              anoncreds_clsignatures::CredentialPrivateKey,
+                                                              anoncreds_clsignatures::CredentialKeyCorrectnessProof)) -> IndyResult<(String, String)> {
         let (credential_definition_value, cred_priv_key, cred_key_correctness_proof) = res;
 
         let cred_def =
@@ -814,9 +815,15 @@ impl IssuerCommandExecutor {
             RevocationRegistryV1::from(
                 self._wallet_get_rev_reg(wallet_handle, &rev_reg_id)?);
 
-        let sdk_tails_accessor = SDKTailsAccessor::new(self.blob_storage_service.clone(),
-                                                       blob_storage_reader_handle,
-                                                       &revocation_registry_definition)?;
+        let cred_def: CredentialDefinitionV1 = CredentialDefinitionV1::from(
+            self.wallet_service.get_indy_object::<CredentialDefinition>(wallet_handle, &revocation_registry_definition.cred_def_id.0, &RecordOptions::id_value())?);
+
+        let rev_reg_def_priv =  {
+            let rev_key_priv: RevocationRegistryDefinitionPrivate =
+                self.wallet_service.get_indy_object(wallet_handle, &rev_reg_id.0, &RecordOptions::id_value())?;
+
+            Some(rev_key_priv)
+        };
 
         if cred_revoc_id > revocation_registry_definition.value.max_cred_num + 1 {
             return Err(err_msg(IndyErrorKind::InvalidUserRevocId, format!("Revocation id: {:?} not found in RevocationRegistry", cred_revoc_id)));
@@ -838,7 +845,9 @@ impl IssuerCommandExecutor {
         };
 
         let rev_reg_delta =
-            self.anoncreds_service.issuer.revoke(&mut rev_reg.value, revocation_registry_definition.value.max_cred_num, cred_revoc_id, &sdk_tails_accessor)?;
+            self.anoncreds_service.issuer.revoke(&mut rev_reg.value, revocation_registry_definition.value.max_cred_num, cred_revoc_id,
+                &cred_def.value.revocation.unwrap(),
+                rev_reg_def_priv.as_ref().map(|r_reg_def_priv| &r_reg_def_priv.value))?;
 
         let rev_reg_delta = RevocationRegistryDelta::RevocationRegistryDeltaV1(RevocationRegistryDeltaV1 { value: rev_reg_delta });
 
@@ -873,9 +882,16 @@ impl IssuerCommandExecutor {
             RevocationRegistryV1::from(
                 self._wallet_get_rev_reg(wallet_handle, &rev_reg_id)?);
 
-        let sdk_tails_accessor = SDKTailsAccessor::new(self.blob_storage_service.clone(),
-                                                       blob_storage_reader_handle,
-                                                       &revocation_registry_definition)?;
+        let cred_def: CredentialDefinitionV1 =
+        CredentialDefinitionV1::from(
+            self.wallet_service.get_indy_object::<CredentialDefinition>(wallet_handle, &revocation_registry_definition.cred_def_id.0, &RecordOptions::id_value())?);
+
+        let rev_reg_def_priv = {
+            let rev_key_priv: RevocationRegistryDefinitionPrivate =
+                self.wallet_service.get_indy_object(wallet_handle, &rev_reg_id.0, &RecordOptions::id_value())?;
+
+             Some(rev_key_priv)
+        };
 
         if cred_revoc_id > revocation_registry_definition.value.max_cred_num + 1 {
             return Err(err_msg(IndyErrorKind::InvalidUserRevocId, format!("Revocation id: {:?} not found in RevocationRegistry", cred_revoc_id)));
@@ -897,7 +913,9 @@ impl IssuerCommandExecutor {
         };
 
         let revocation_registry_delta =
-            self.anoncreds_service.issuer.recovery(&mut rev_reg.value, revocation_registry_definition.value.max_cred_num, cred_revoc_id, &sdk_tails_accessor)?;
+            self.anoncreds_service.issuer.recovery(&mut rev_reg.value, revocation_registry_definition.value.max_cred_num, cred_revoc_id,
+                &cred_def.value.revocation.unwrap(),
+                rev_reg_def_priv.as_ref().map(|r_reg_def_priv| &r_reg_def_priv.value))?;
 
         let rev_reg_delta = RevocationRegistryDelta::RevocationRegistryDeltaV1(RevocationRegistryDeltaV1 { value: revocation_registry_delta });
 

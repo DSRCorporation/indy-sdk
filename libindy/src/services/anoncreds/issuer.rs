@@ -1,7 +1,8 @@
-use ursa::cl::{
+use anoncreds_clsignatures::{
     CredentialKeyCorrectnessProof,
     CredentialPrivateKey,
     CredentialPublicKey,
+    CredentialRevocationPublicKey,
     CredentialSignature,
     Nonce,
     RevocationKeyPrivate,
@@ -11,7 +12,7 @@ use ursa::cl::{
     RevocationTailsGenerator,
     SignatureCorrectnessProof,
 };
-use ursa::cl::issuer::Issuer as CryptoIssuer;
+use anoncreds_clsignatures::Issuer as CryptoIssuer;
 
 use crate::domain::anoncreds::schema::AttributeNames;
 use crate::domain::anoncreds::credential::CredentialValues;
@@ -42,8 +43,8 @@ impl Issuer {
             CryptoIssuer::new_credential_def(&credential_schema, &non_credential_schema, support_revocation)?;
 
         let credential_definition_value = CredentialDefinitionData {
-            primary: credential_public_key.get_primary_key()?.try_clone()?,
-            revocation: credential_public_key.get_revocation_key()?.clone(),
+            primary: credential_public_key.get_primary_key().try_clone()?,
+            revocation: credential_public_key.get_revocation_key().cloned(),
         };
 
         trace!("new_credential_definition <<< credential_definition_value: {:?}, credential_private_key: {:?}, credential_key_correctness_proof: {:?}",
@@ -112,10 +113,10 @@ impl Issuer {
                     let rev_reg_def = rev_reg_def
                         .ok_or_else(|| err_msg(IndyErrorKind::InvalidState, "RevocationRegistryDefinitionValue not found"))?;
 
-                    let rev_tails_accessor = rev_tails_accessor
+                    let _rev_tails_accessor = rev_tails_accessor
                         .ok_or_else(|| err_msg(IndyErrorKind::InvalidState, "RevocationTailsAccessor not found"))?;
 
-                    CryptoIssuer::sign_credential_with_revoc(&cred_request.prover_did.0,
+                    let (signature, correctness_proof, _witness, delta ) = CryptoIssuer::sign_credential_with_revoc(&cred_request.prover_did.0,
                                                              &cred_request.blinded_ms,
                                                              &cred_request.blinded_ms_correctness_proof,
                                                              cred_issuance_blinding_nonce,
@@ -128,7 +129,10 @@ impl Issuer {
                                                              rev_reg_def.value.issuance_type.to_bool(),
                                                              rev_reg,
                                                              rev_key_priv,
-                                                             rev_tails_accessor)?
+                                                            //  rev_tails_accessor
+                                                        )?;
+                    (signature, correctness_proof, delta)
+                    
                 }
                 None => {
                     let (signature, correctness_proof) =
@@ -150,14 +154,15 @@ impl Issuer {
         Ok((credential_signature, signature_correctness_proof, rev_reg_delta))
     }
 
-    pub fn revoke<RTA>(&self,
+    pub fn revoke(&self,
                        rev_reg: &mut RevocationRegistry,
                        max_cred_num: u32,
                        rev_idx: u32,
-                       rev_tails_accessor: &RTA) -> IndyResult<RevocationRegistryDelta> where RTA: RevocationTailsAccessor {
+                       cred_pub_key: &CredentialRevocationPublicKey,
+                       rev_key_priv: Option<&RevocationKeyPrivate>) -> IndyResult<RevocationRegistryDelta> {
         trace!("revoke >>> rev_reg: {:?}, max_cred_num: {:?}, rev_idx: {:?}", rev_reg, max_cred_num, secret!(&rev_idx));
 
-        let rev_reg_delta = CryptoIssuer::revoke_credential(rev_reg, max_cred_num, rev_idx, rev_tails_accessor)?;
+        let rev_reg_delta = CryptoIssuer::revoke_credential(rev_reg, max_cred_num, rev_idx, cred_pub_key, rev_key_priv.unwrap())?;
 
         trace!("recovery <<< rev_reg_delta {:?}", rev_reg_delta);
 
@@ -165,14 +170,15 @@ impl Issuer {
     }
 
     #[allow(dead_code)]
-    pub fn recovery<RTA>(&self,
+    pub fn recovery(&self,
                          rev_reg: &mut RevocationRegistry,
                          max_cred_num: u32,
                          rev_idx: u32,
-                         rev_tails_accessor: &RTA) -> IndyResult<RevocationRegistryDelta> where RTA: RevocationTailsAccessor {
+                         cred_pub_key: &CredentialRevocationPublicKey,
+                         rev_key_priv: Option<&RevocationKeyPrivate>) -> IndyResult<RevocationRegistryDelta> {
         trace!("revoke >>> rev_reg: {:?}, max_cred_num: {:?}, rev_idx: {:?}", rev_reg, max_cred_num, secret!(&rev_idx));
 
-        let rev_reg_delta = CryptoIssuer::recovery_credential(rev_reg, max_cred_num, rev_idx, rev_tails_accessor)?;
+        let rev_reg_delta = CryptoIssuer::unrevoke_credential(rev_reg, max_cred_num, rev_idx, cred_pub_key, rev_key_priv.unwrap())?;
 
         trace!("recovery <<< rev_reg_delta {:?}", rev_reg_delta);
 

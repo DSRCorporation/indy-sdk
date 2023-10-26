@@ -6,7 +6,7 @@ use super::super::crypto::did::DidValue;
 use indy_api_types::validation::Validatable;
 use crate::utils::qualifier;
 
-use ursa::cl::{
+use anoncreds_clsignatures::{
     CredentialPrimaryPublicKey,
     CredentialRevocationPublicKey,
     CredentialPrivateKey,

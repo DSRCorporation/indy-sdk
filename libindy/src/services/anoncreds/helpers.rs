@@ -2,7 +2,7 @@ use indy_api_types::errors::prelude::*;
 
 use crate::domain::anoncreds::credential::AttributeValues;
 use crate::domain::anoncreds::proof_request::{AttributeInfo, PredicateInfo, NonRevocedInterval};
-use ursa::cl::{issuer, verifier, CredentialSchema, NonCredentialSchema, MasterSecret, CredentialValues, SubProofRequest};
+use anoncreds_clsignatures::{Issuer, Verifier, CredentialSchema, NonCredentialSchema, LinkSecret, CredentialValues, SubProofRequest};
 
 use crate::domain::crypto::did::DidValue;
 use crate::domain::anoncreds::schema::SchemaId;
@@ -24,7 +24,7 @@ pub fn attr_common_view(attr: &str) -> String {
 pub fn build_credential_schema(attrs: &HashSet<String>) -> IndyResult<CredentialSchema> {
     trace!("build_credential_schema >>> attrs: {:?}", attrs);
 
-    let mut credential_schema_builder = issuer::Issuer::new_credential_schema_builder()?;
+    let mut credential_schema_builder = Issuer::new_credential_schema_builder()?;
     for attr in attrs {
         credential_schema_builder.add_attr(&attr_common_view(attr))?;
     }
@@ -39,7 +39,7 @@ pub fn build_credential_schema(attrs: &HashSet<String>) -> IndyResult<Credential
 pub fn build_non_credential_schema() -> IndyResult<NonCredentialSchema> {
     trace!("build_non_credential_schema");
 
-    let mut non_credential_schema_builder = issuer::Issuer::new_non_credential_schema_builder()?;
+    let mut non_credential_schema_builder = Issuer::new_non_credential_schema_builder()?;
     non_credential_schema_builder.add_attr("master_secret")?;
     let res = non_credential_schema_builder.finalize()?;
 
@@ -47,10 +47,10 @@ pub fn build_non_credential_schema() -> IndyResult<NonCredentialSchema> {
     Ok(res)
 }
 
-pub fn build_credential_values(credential_values: &HashMap<String, AttributeValues>, master_secret: Option<&MasterSecret>) -> IndyResult<CredentialValues> {
+pub fn build_credential_values(credential_values: &HashMap<String, AttributeValues>, master_secret: Option<&LinkSecret>) -> IndyResult<CredentialValues> {
     trace!("build_credential_values >>> credential_values: {:?}", credential_values);
 
-    let mut credential_values_builder = issuer::Issuer::new_credential_values_builder()?;
+    let mut credential_values_builder = Issuer::new_credential_values_builder()?;
     for (attr, values) in credential_values {
         credential_values_builder.add_dec_known(&attr_common_view(attr), &values.encoded)?;
     }
@@ -69,7 +69,7 @@ pub fn build_sub_proof_request(attrs_for_credential: &[AttributeInfo],
                                predicates_for_credential: &[PredicateInfo]) -> IndyResult<SubProofRequest> {
     trace!("build_sub_proof_request >>> attrs_for_credential: {:?}, predicates_for_credential: {:?}", attrs_for_credential, predicates_for_credential);
 
-    let mut sub_proof_request_builder = verifier::Verifier::new_sub_proof_request_builder()?;
+    let mut sub_proof_request_builder = Verifier::new_sub_proof_request_builder()?;
 
     for attr in attrs_for_credential {
         let names = if let Some(name) = &attr.name {

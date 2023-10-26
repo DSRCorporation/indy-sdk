@@ -1,4 +1,4 @@
-use ursa::cl::RevocationRegistry as CryptoRevocationRegistry;
+use anoncreds_clsignatures::RevocationRegistry as CryptoRevocationRegistry;
 
 use std::collections::HashMap;
 

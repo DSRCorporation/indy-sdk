@@ -9,9 +9,9 @@ use crate::domain::anoncreds::schema::{SchemaV1, SchemaId};
 use indy_api_types::errors::prelude::*;
 use crate::services::anoncreds::helpers::*;
 
-use ursa::bn::BigNumber;
-use ursa::cl::{CredentialPublicKey, new_nonce, Nonce};
-use ursa::cl::verifier::Verifier as CryptoVerifier;
+use anoncreds_clsignatures::bn::BigNumber;
+use anoncreds_clsignatures::{CredentialPublicKey, new_nonce, Nonce};
+use anoncreds_clsignatures::Verifier as CryptoVerifier;
 use crate::utils::wql::Query;
 use regex::Regex;
 

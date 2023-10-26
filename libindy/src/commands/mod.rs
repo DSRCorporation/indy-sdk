@@ -1,4 +1,4 @@
-extern crate ursa;
+extern crate anoncreds_clsignatures;
 extern crate threadpool;
 
 use std::env;

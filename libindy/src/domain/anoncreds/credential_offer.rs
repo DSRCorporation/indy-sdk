@@ -1,4 +1,4 @@
-use ursa::cl::{CredentialKeyCorrectnessProof, Nonce};
+use anoncreds_clsignatures::{CredentialKeyCorrectnessProof, Nonce};
 
 use super::schema::SchemaId;
 use super::credential_definition::CredentialDefinitionId;

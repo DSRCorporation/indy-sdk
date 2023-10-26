@@ -1,4 +1,4 @@
-use ursa::cl::{
+use anoncreds_clsignatures::{
     BlindedCredentialSecrets,
     BlindedCredentialSecretsCorrectnessProof,
     CredentialSecretsBlindingFactors,

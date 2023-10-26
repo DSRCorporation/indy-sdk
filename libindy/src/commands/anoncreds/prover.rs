@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
 
-use ursa::cl::{new_nonce, RevocationRegistry, Witness};
+use anoncreds_clsignatures::{new_nonce, RevocationRegistry, Witness};
 
 use serde_json::Value;
 
@@ -26,7 +26,7 @@ use crate::services::anoncreds::helpers::{parse_cred_rev_id, get_non_revoc_inter
 use crate::services::blob_storage::BlobStorageService;
 use crate::services::crypto::CryptoService;
 use indy_wallet::{RecordOptions, SearchOptions, WalletRecord, WalletSearch, WalletService};
-use indy_utils::{next_search_handle};
+use indy_utils::next_search_handle;
 use crate::utils::wql::Query;
 
 use super::tails::SDKTailsAccessor;

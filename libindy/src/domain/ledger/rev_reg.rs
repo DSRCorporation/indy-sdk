@@ -1,6 +1,6 @@
 use super::constants::{REVOC_REG_ENTRY, GET_REVOC_REG, GET_REVOC_REG_DELTA};
 
-use ursa::cl::{RevocationRegistry, RevocationRegistryDelta};
+use anoncreds_clsignatures::{RevocationRegistry, RevocationRegistryDelta};
 
 use super::response::{GetReplyResultV1, ReplyType};
 use super::super::anoncreds::revocation_registry_definition::RevocationRegistryId;

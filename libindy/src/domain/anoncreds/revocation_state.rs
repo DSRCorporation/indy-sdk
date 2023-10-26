@@ -1,4 +1,4 @@
-use ursa::cl::{Witness, RevocationRegistry};
+use anoncreds_clsignatures::{Witness, RevocationRegistry};
 use std::collections::HashMap;
 
 use indy_api_types::validation::Validatable;

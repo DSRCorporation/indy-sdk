@@ -1,4 +1,4 @@
-use ursa::cl::{RevocationKeyPublic, RevocationKeyPrivate};
+use anoncreds_clsignatures::{RevocationKeyPublic, RevocationKeyPrivate};
 
 use super::DELIMITER;
 use super::credential_definition::CredentialDefinitionId;

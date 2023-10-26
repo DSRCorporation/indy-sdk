@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::fmt;
-use ursa::cl::Nonce;
+use anoncreds_clsignatures::Nonce;
 
 use indy_api_types::validation::Validatable;
 

@@ -80,7 +80,7 @@ macro_rules! inject_indy_dependencies {
 
         extern crate byteorder;
         extern crate hex;
-        extern crate ursa;
+        // extern crate ursa;
         extern crate uuid;
         extern crate openssl;
         extern crate rmp_serde;

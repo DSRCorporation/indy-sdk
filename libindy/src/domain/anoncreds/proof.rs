@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use ursa::cl::Proof as CryptoProof;
+use anoncreds_clsignatures::Proof as CryptoProof;
 
 use super::schema::SchemaId;
 use super::credential_definition::CredentialDefinitionId;

@@ -2,8 +2,7 @@ use indy_api_types::errors::prelude::*;
 use crate::services::blob_storage::BlobStorageService;
 use crate::domain::anoncreds::revocation_registry_definition::RevocationRegistryDefinitionV1;
 
-use ursa::cl::{Tail, RevocationTailsAccessor, RevocationTailsGenerator};
-use ursa::errors::prelude::{UrsaCryptoError, UrsaCryptoErrorKind};
+use anoncreds_clsignatures::{Tail, RevocationTailsAccessor, RevocationTailsGenerator, Error as UrsaCryptoError, ErrorKind as UrsaCryptoErrorKind};
 
 use rust_base58::{ToBase58, FromBase58};
 
@@ -54,7 +53,7 @@ impl RevocationTailsAccessor for SDKTailsAccessor {
                   TAIL_SIZE,
                   TAIL_SIZE * tail_id as usize + TAILS_BLOB_TAG_SZ as usize)
             .map_err(|_|
-                UrsaCryptoError::from_msg(UrsaCryptoErrorKind::InvalidState, "Can't read tail bytes from blob storage"))?; // FIXME: IO error should be returned
+                UrsaCryptoError::new(UrsaCryptoErrorKind::InvalidState, "Can't read tail bytes from blob storage"))?; // FIXME: IO error should be returned
 
         let tail = Tail::from_bytes(tail_bytes.as_slice())?;
         accessor(&tail);
