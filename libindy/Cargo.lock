@@ -48,7 +48,7 @@ dependencies = [
 [[package]]
 name = "anoncreds-clsignatures"
 version = "0.2.3"
-source = "git+https://github.com/DSRCorporation/anoncreds-clsignatures-rs.git?branch=indy-sdk-without-ursa#6e0612876f3afc278c671b3f14c76996e74da09e"
+source = "git+https://github.com/DSRCorporation/anoncreds-clsignatures-rs.git?branch=indy-sdk-without-ursa#5c0840b84907a6a86be36b089999c9571198905a"
 dependencies = [
  "amcl",
  "failure",

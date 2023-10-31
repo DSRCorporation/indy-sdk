@@ -27,6 +27,8 @@ version =  "=0.2.3"
 optional = true
 git = "https://github.com/DSRCorporation/anoncreds-clsignatures-rs.git"
 branch = "indy-sdk-without-ursa"
+default-features = false
+features = ["serde"]
 # features = ["logger"]
 
 [target.'cfg(any(target_os = "android", target_os = "ios"))'.dependencies]
