@@ -3,7 +3,7 @@ extern crate sodiumoxide;
 use crate::indy_api_types::errors::prelude::*;
 use libc::size_t;
 
-use zeroize_derive::{ZeroizeOnDrop, Zeroize};
+use zeroize_derive::{Zeroize, ZeroizeOnDrop};
 
 pub const SEEDBYTES: usize = 32; // randombytes_seedbytes
 
