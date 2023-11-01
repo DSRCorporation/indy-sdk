@@ -8,7 +8,7 @@ edition = "2018"
 
 [features]
 default = ["casting_errors"]
-casting_errors = ["openssl", "rust-base58", "rusqlite", "zmq", "anoncreds-clsignatures", "rusqlite"]
+casting_errors = ["openssl", "rust-base58", "rusqlite", "zmq", "anoncreds-clsignatures", "indy-blssignatures", "rusqlite"]
 
 [dependencies]
 failure = "0.1.6"
@@ -25,11 +25,10 @@ zmq = {version = "0.9.1", optional = true}
 [dependencies.anoncreds-clsignatures]
 version =  "=0.2.3"
 optional = true
-git = "https://github.com/DSRCorporation/anoncreds-clsignatures-rs.git"
-branch = "indy-sdk-without-ursa"
-default-features = false
-features = ["serde"]
-# features = ["logger"]
+
+[dependencies.indy-blssignatures]
+version =  "0.1"
+optional = true
 
 [target.'cfg(any(target_os = "android", target_os = "ios"))'.dependencies]
 rusqlite = { version = "0.25.3", features=["bundled"], optional = true }

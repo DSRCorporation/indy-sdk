@@ -2,13 +2,7 @@ use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
 
-use anoncreds_clsignatures::{
-    new_nonce,
-    CredentialKeyCorrectnessProof,
-    CredentialPrivateKey,
-    RevocationRegistryDelta as CryptoRevocationRegistryDelta,
-    Witness,
-};
+use anoncreds_clsignatures::{new_nonce, CredentialKeyCorrectnessProof, CredentialPrivateKey, RevocationRegistryDelta as CryptoRevocationRegistryDelta, Witness, CredentialPublicKey};
 
 use crate::commands::{Command, CommandExecutor, BoxedCallbackStringStringSend};
 use crate::commands::anoncreds::AnoncredsCommand;
@@ -846,7 +840,7 @@ impl IssuerCommandExecutor {
 
         let rev_reg_delta =
             self.anoncreds_service.issuer.revoke(&mut rev_reg.value, revocation_registry_definition.value.max_cred_num, cred_revoc_id,
-                &cred_def.value.revocation.unwrap(),
+                &CredentialPublicKey::build_from_parts(&cred_def.value.primary, cred_def.value.revocation.as_ref())?,
                 rev_reg_def_priv.as_ref().map(|r_reg_def_priv| &r_reg_def_priv.value))?;
 
         let rev_reg_delta = RevocationRegistryDelta::RevocationRegistryDeltaV1(RevocationRegistryDeltaV1 { value: rev_reg_delta });
@@ -913,8 +907,9 @@ impl IssuerCommandExecutor {
         };
 
         let revocation_registry_delta =
-            self.anoncreds_service.issuer.recovery(&mut rev_reg.value, revocation_registry_definition.value.max_cred_num, cred_revoc_id,
-                &cred_def.value.revocation.unwrap(),
+            self.anoncreds_service.issuer.recovery(
+                &mut rev_reg.value, revocation_registry_definition.value.max_cred_num, cred_revoc_id,
+                &CredentialPublicKey::build_from_parts(&cred_def.value.primary, cred_def.value.revocation.as_ref())?,
                 rev_reg_def_priv.as_ref().map(|r_reg_def_priv| &r_reg_def_priv.value))?;
 
         let rev_reg_delta = RevocationRegistryDelta::RevocationRegistryDeltaV1(RevocationRegistryDeltaV1 { value: revocation_registry_delta });

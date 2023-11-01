@@ -80,6 +80,7 @@ impl VerifierCommandExecutor {
         let nonce = self.anoncreds_service.verifier.generate_nonce()?;
 
         let result = nonce.to_dec()
+            .map_err(IndyError::from)
             .to_indy(IndyErrorKind::InvalidState, "Cannot serialize Nonce")?;
 
         debug!("generate_nonce <<< result: {:?}", result);

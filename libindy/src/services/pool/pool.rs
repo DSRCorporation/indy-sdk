@@ -693,6 +693,7 @@ fn _get_nodes_and_remotes(merkle: &MerkleTree) -> IndyResult<(Nodes, Vec<RemoteN
                     .to_indy(IndyErrorKind::InvalidStructure, "Invalid field blskey in genesis transaction")?;
 
                 Some(VerKey::from_bytes(&key)
+                    .map_err(IndyError::from)
                     .to_indy(IndyErrorKind::InvalidStructure, "Invalid field blskey in genesis transaction")?)
             }
             None => None,

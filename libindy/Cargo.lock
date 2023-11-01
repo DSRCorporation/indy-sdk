@@ -48,10 +48,10 @@ dependencies = [
 [[package]]
 name = "anoncreds-clsignatures"
 version = "0.2.3"
-source = "git+https://github.com/DSRCorporation/anoncreds-clsignatures-rs.git?branch=indy-sdk-without-ursa#5c0840b84907a6a86be36b089999c9571198905a"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5f0a6071c39753711af4abaac08590f276980ae550d4e8f4b8c4a0b40a3dc39c"
 dependencies = [
  "amcl",
- "failure",
  "glass_pumpkin",
  "log",
  "num-bigint 0.4.4",
@@ -736,6 +736,7 @@ version = "0.1.0"
 dependencies = [
  "anoncreds-clsignatures",
  "failure",
+ "indy-blssignatures",
  "libc",
  "log",
  "openssl",
@@ -749,11 +750,11 @@ dependencies = [
 
 [[package]]
 name = "indy-blssignatures"
-version = "0.1.1"
-source = "git+https://github.com/DSRCorporation/indy-blssignatures-rs.git?branch=indy-sdk-without-ursa#3f7674bee1e7616dc3235df4fe9949052fdf174a"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7ea4f5684155eae13be942fc61ff57706254adc0c6e99316c98805a0985200db"
 dependencies = [
  "amcl",
- "failure",
  "rand 0.8.5",
  "serde",
  "sha2 0.10.1",

@@ -2,7 +2,6 @@ use anoncreds_clsignatures::{
     CredentialKeyCorrectnessProof,
     CredentialPrivateKey,
     CredentialPublicKey,
-    CredentialRevocationPublicKey,
     CredentialSignature,
     Nonce,
     RevocationKeyPrivate,
@@ -158,7 +157,7 @@ impl Issuer {
                        rev_reg: &mut RevocationRegistry,
                        max_cred_num: u32,
                        rev_idx: u32,
-                       cred_pub_key: &CredentialRevocationPublicKey,
+                       cred_pub_key: &CredentialPublicKey,
                        rev_key_priv: Option<&RevocationKeyPrivate>) -> IndyResult<RevocationRegistryDelta> {
         trace!("revoke >>> rev_reg: {:?}, max_cred_num: {:?}, rev_idx: {:?}", rev_reg, max_cred_num, secret!(&rev_idx));
 
@@ -174,7 +173,7 @@ impl Issuer {
                          rev_reg: &mut RevocationRegistry,
                          max_cred_num: u32,
                          rev_idx: u32,
-                         cred_pub_key: &CredentialRevocationPublicKey,
+                         cred_pub_key: &CredentialPublicKey,
                          rev_key_priv: Option<&RevocationKeyPrivate>) -> IndyResult<RevocationRegistryDelta> {
         trace!("revoke >>> rev_reg: {:?}, max_cred_num: {:?}, rev_idx: {:?}", rev_reg, max_cred_num, secret!(&rev_idx));
 
