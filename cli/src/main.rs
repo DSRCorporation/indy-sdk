@@ -30,13 +30,13 @@ use crate::command_executor::CommandExecutor;
 use crate::commands::{common, did, ledger, pool, wallet, payment_address};
 use crate::utils::history;
 
-use linefeed::{Reader, ReadResult, Terminal, Signal};
+use linefeed::{ReadResult, Terminal, Signal, Prompter, Interface};
 use linefeed::complete::{Completer, Completion};
 
 use std::env;
 use std::fs::File;
 use std::io::BufReader;
-use std::rc::Rc;
+use std::sync::Arc;
 
 fn main() {
     #[cfg(target_os = "windows")]
@@ -202,17 +202,17 @@ fn build_executor() -> CommandExecutor {
 }
 
 fn execute_stdin(command_executor: CommandExecutor) {
-    match Reader::new("indy-cli") {
+    match Interface::new("indy-cli") {
         Ok(reader) => execute_interactive(command_executor, reader),
         Err(_) => execute_batch(&command_executor, None),
     }
 }
 
-fn execute_interactive<T>(command_executor: CommandExecutor, mut reader: Reader<T>)
+fn execute_interactive<T>(command_executor: CommandExecutor, mut reader: Interface<T>)
     where T: Terminal {
-    let command_executor = Rc::new(command_executor);
+    let command_executor = Arc::new(command_executor);
     reader.set_completer(command_executor.clone());
-    reader.set_prompt(&command_executor.ctx().get_prompt());
+    reader.set_prompt(&command_executor.ctx().get_prompt()).ok();
     history::load(&mut reader).ok();
 
     while let Ok(read_result) = reader.read_line() {
@@ -225,7 +225,7 @@ fn execute_interactive<T>(command_executor: CommandExecutor, mut reader: Reader<
 
                 let _ = command_executor.execute(&line).is_ok();
                 reader.add_history(line.to_string());
-                reader.set_prompt(&command_executor.ctx().get_prompt());
+                reader.set_prompt(&command_executor.ctx().get_prompt()).ok();
 
                 if command_executor.ctx().is_exit() {
                     history::persist(&reader).ok();
@@ -323,7 +323,7 @@ fn _iter_batch<T>(command_executor: &CommandExecutor, reader: T) where T: std::i
 }
 
 impl<Term: Terminal> Completer<Term> for CommandExecutor {
-    fn complete(&self, word: &str, reader: &Reader<Term>,
+    fn complete(&self, word: &str, reader: &Prompter<Term>,
                 _start: usize, _end: usize) -> Option<Vec<Completion>> {
         Some(self
             .complete(reader.buffer(),

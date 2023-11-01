@@ -1,10 +1,7 @@
 extern crate serde_json;
 extern crate term;
 
-use self::term::{Attr, color};
-use prettytable::Table;
-use prettytable::row::Row;
-use prettytable::cell::Cell;
+use prettytable::{Attr, Table, color, Row, Cell};
 
 pub fn print_list_table(rows: &[serde_json::Value], headers: &[(&str, &str)], empty_msg: &str) {
     if rows.is_empty() {

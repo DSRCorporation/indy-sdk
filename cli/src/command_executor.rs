@@ -8,7 +8,7 @@ use std::cell::RefCell;
 use std::collections::BTreeMap;
 use std::collections::HashMap;
 
-use linefeed::{Reader, ReadResult};
+use linefeed::{Interface, ReadResult};
 
 #[derive(Debug)]
 pub struct ParamMetadata {
@@ -189,6 +189,11 @@ pub struct CommandContext {
     plugins: RefCell<HashMap<String, libloading::Library>>,
     taa_acceptance_mechanism: RefCell<String>,
     is_batch_mode: RefCell<bool>,
+}
+
+unsafe impl Sync for CommandContext {
+    // TODO CLI is single-thread now, so it's OK to define CommandContext as Sync.
+    // should be updated in case of evolution to mutli-thread app.
 }
 
 impl CommandContext {
@@ -1001,7 +1006,7 @@ pub fn wait_for_user_reply(ctx: &CommandContext) -> bool {
         return true;
     }
 
-    let mut reader = Reader::new("User Reply Reader").unwrap();
+    let reader = Interface::new("User Reply Reader").unwrap();
 
     while let Ok(ReadResult::Input(line)) = reader.read_line() {
         let line = line.trim();
