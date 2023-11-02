@@ -100,35 +100,35 @@ priority = "optional"
 maintainer-scripts = "./debian"
 changelog = "./debian/changelog"
 
-[package.metadata.deb.variants.libindy-xenial]
-provides = "libindy (= 1.16.0)"
-name = "libindy"
-depends = "libzmq5, libsodium18, libssl1.0.0"
-assets = [
-    ["target/release/libindy.so", "usr/lib/", "644"],
-]
-
-[package.metadata.deb.variants.libindy-bionic]
-provides = "libindy (= 1.16.0)"
+[package.metadata.deb.variants.libindy-focal]
+provides = "libindy (= 1.16.0-no-ursa-focal)"
 name = "libindy"
 depends = "libzmq5, libsodium23, libssl1.1"
 assets = [
     ["target/release/libindy.so", "usr/lib/", "644"],
 ]
 
-[package.metadata.deb.variants.libindy-dev-xenial]
-provides = "libindy-dev (= 1.16.0)"
+[package.metadata.deb.variants.libindy-jammy]
+provides = "libindy (= 1.16.0-no-ursa-jammy)"
+name = "libindy"
+depends = "libzmq5, libsodium23, libssl3"
+assets = [
+    ["target/release/libindy.so", "usr/lib/", "644"],
+]
+
+[package.metadata.deb.variants.libindy-dev-focal]
+provides = "libindy-dev (= 1.16.0-no-ursa-focal)"
 name = "libindy-dev"
-depends = "libindy (= 1.16.0)"
+depends = "libindy (= 1.16.0-no-ursa-focal)"
 assets = [
     ["include/*.h", "usr/include/indy/", "644"],
     ["target/release/libindy.a", "usr/lib/", "644"],
 ]
 
-[package.metadata.deb.variants.libindy-dev-bionic]
-provides = "libindy-dev (= 1.16.0)"
+[package.metadata.deb.variants.libindy-dev-jammy]
+provides = "libindy-dev (= 1.16.0-no-ursa-jammy)"
 name = "libindy-dev"
-depends = "libindy (= 1.16.0)"
+depends = "libindy (= 1.16.0-no-ursa-jammy)"
 assets = [
     ["include/*.h", "usr/include/indy/", "644"],
     ["target/release/libindy.a", "usr/lib/", "644"],
