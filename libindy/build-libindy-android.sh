@@ -6,3 +6,5 @@ echo "Building for arm64"
 bash android.build.sh -d arm64
 echo "Building for x86"
 bash android.build.sh -d x86
+echo "Building for x86_64"
+bash android.build.sh -d x86_64

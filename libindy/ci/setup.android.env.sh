@@ -7,14 +7,14 @@ if [ -z "${ANDROID_BUILD_FOLDER}" ]; then
     echo STDERR "e.g. x86 or arm"
     exit 1
 fi
-ANDROID_SDK=${ANDROID_BUILD_FOLDER}/sdk
+ANDROID_SDK=/opt/android-sdk
 export ANDROID_SDK_ROOT=${ANDROID_SDK}
 export ANDROID_HOME=${ANDROID_SDK}
 export PATH=${PATH}:${ANDROID_HOME}/platform-tools
 export PATH=${PATH}:${ANDROID_HOME}/tools
 export PATH=${PATH}:${ANDROID_HOME}/tools/bin
 
-mkdir -p ${ANDROID_SDK}
+#mkdir -p ${ANDROID_SDK}
 
 TARGET_ARCH=$1
 
@@ -85,7 +85,7 @@ create_avd(){
                 -f \
                 -c 1000M
 
-        ANDROID_SDK_ROOT=${ANDROID_SDK} ANDROID_HOME=${ANDROID_SDK} ${ANDROID_HOME}/tools/emulator -avd ${ABSOLUTE_ARCH} -no-audio -no-window -no-snapshot -no-accel &
+        ANDROID_SDK_ROOT=${ANDROID_SDK} ANDROID_HOME=${ANDROID_SDK} ${ANDROID_HOME}/emulator/emulator -avd ${ABSOLUTE_ARCH} -no-audio -no-window -no-snapshot -no-accel &
 }
 
 download_and_unzip_if_missed() {
@@ -126,78 +126,71 @@ generate_arch_flags(){
         exit 1
     fi
     export ABSOLUTE_ARCH=$1
-    export TARGET_ARCH=$1
-    if [ $1 == "arm" ]; then
-        export TARGET_API="21"
-        export TRIPLET="arm-linux-androideabi"
-        export ANDROID_TRIPLET=${TRIPLET}
-        export ABI="armeabi-v7a"
-        export TOOLCHAIN_SYSROOT_LIB="lib"
-    fi
+    export TARGET_API="21" # Android NDK API
 
-    if [ $1 == "armv7" ]; then
-        export TARGET_ARCH="arm"
-        export TARGET_API="21"
-        export TRIPLET="armv7-linux-androideabi"
-        export ANDROID_TRIPLET="arm-linux-androideabi"
+    if [[ $1 == "arm" || $1 == "armv7" ]]; then
+        export TARGET_ARCH="armeabi-v7a"
+        export TRIPLET="arm-linux-androideabi"
+        export ANDROID_TRIPLET="armv7a-linux-androideabi"
+        export ANDROID_LIB_TRIPLET="arm-linux-androideabi"
         export ABI="armeabi-v7a"
-        export TOOLCHAIN_SYSROOT_LIB="lib"
     fi
 
     if [ $1 == "arm64" ]; then
-        export TARGET_API="21"
+        export TARGET_ARCH="arm64-v8a"
         export TRIPLET="aarch64-linux-android"
         export ANDROID_TRIPLET=${TRIPLET}
+        export ANDROID_LIB_TRIPLET=${TRIPLET}
         export ABI="arm64-v8a"
-        export TOOLCHAIN_SYSROOT_LIB="lib"
     fi
 
     if [ $1 == "x86" ]; then
-        export TARGET_API="21"
+        export TARGET_ARCH="x86"
         export TRIPLET="i686-linux-android"
         export ANDROID_TRIPLET=${TRIPLET}
+        export ANDROID_LIB_TRIPLET=${TRIPLET}
         export ABI="x86"
-        export TOOLCHAIN_SYSROOT_LIB="lib"
     fi
 
     if [ $1 == "x86_64" ]; then
-        export TARGET_API="21"
+        export TARGET_ARCH="x86_64"
         export TRIPLET="x86_64-linux-android"
         export ANDROID_TRIPLET=${TRIPLET}
+        export ANDROID_LIB_TRIPLET=${TRIPLET}
         export ABI="x86_64"
-        export TOOLCHAIN_SYSROOT_LIB="lib64"
     fi
-
 }
 
+
 prepare_dependencies() {
+    PREBUILT_ARCHIVES=https://github.com/DSRCorporation/indy-android-dependencies/raw/refs/heads/android-ndk-r29/prebuilt
+    ARCH=$1
     pushd ${ANDROID_BUILD_FOLDER}
-        download_and_unzip_if_missed "openssl_$1" "https://repo.sovrin.org/android/libindy/deps-libc++/openssl/" "openssl_$1.zip"
-        download_and_unzip_if_missed "libsodium_$1" "https://repo.sovrin.org/android/libindy/deps-libc++/sodium/" "libsodium_$1.zip"
-        download_and_unzip_if_missed "libzmq_$1" "https://repo.sovrin.org/android/libindy/deps-libc++/zmq/" "libzmq_$1.zip"
+        mkdir -p openssl
+        pushd openssl
+            download_and_unzip_if_missed "$ARCH" "$PREBUILT_ARCHIVES/openssl/" "$ARCH.zip"
+        popd
+        mkdir -p libsodium
+        pushd libsodium
+            download_and_unzip_if_missed "$ARCH" "$PREBUILT_ARCHIVES/libsodium/" "$ARCH.zip"
+        popd
+        mkdir -p libzmq
+        pushd libzmq
+            download_and_unzip_if_missed "$ARCH" "$PREBUILT_ARCHIVES/libzmq/" "$ARCH.zip"
+        popd
     popd
 }
 
 
 setup_dependencies_env_vars(){
-    export OPENSSL_DIR=${ANDROID_BUILD_FOLDER}/openssl_$1
-    export SODIUM_DIR=${ANDROID_BUILD_FOLDER}/libsodium_$1
-    export LIBZMQ_DIR=${ANDROID_BUILD_FOLDER}/libzmq_$1
+    export OPENSSL_DIR=${ANDROID_BUILD_FOLDER}/openssl/$1
+    export SODIUM_DIR=${ANDROID_BUILD_FOLDER}/libsodium/$1
+    export LIBZMQ_DIR=${ANDROID_BUILD_FOLDER}/libzmq/$1
 }
 
 
-
-create_standalone_toolchain_and_rust_target(){
-    #will only create toolchain if not already created
-    python3 ${ANDROID_NDK_ROOT}/build/tools/make_standalone_toolchain.py \
-    --arch ${TARGET_ARCH} \
-    --api ${TARGET_API} \
-    --stl=libc++ \
-    --force \
-    --install-dir ${TOOLCHAIN_DIR}
-
-    # add rust target
-    rustup target add ${TRIPLET}
+create_standalone_toolchain_and_rust_target() {
+    echo "Skipping toolchain creation since it is not needed anymore"
 }
 
 
@@ -208,17 +201,16 @@ download_and_setup_toolchain(){
         mkdir -p ${TOOLCHAIN_PREFIX}
         pushd $TOOLCHAIN_PREFIX
         echo "${GREEN}Resolving NDK for OSX${RESET}"
-        download_and_unzip_if_missed "android-ndk-r20" "https://dl.google.com/android/repository/" "android-ndk-r20-darwin-x86_64.zip"
-        popd
+        download_and_unzip_if_missed "android-ndk-r29" "https://dl.google.com/android/repository/" "android-ndk-r29-darwin-x86_64.zip"
     elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
         export TOOLCHAIN_PREFIX=${ANDROID_BUILD_FOLDER}/toolchains/linux
         mkdir -p ${TOOLCHAIN_PREFIX}
         pushd $TOOLCHAIN_PREFIX
         echo "${GREEN}Resolving NDK for Linux${RESET}"
-        download_and_unzip_if_missed "android-ndk-r20" "https://dl.google.com/android/repository/" "android-ndk-r20-linux-x86_64.zip"
+        download_and_unzip_if_missed "android-ndk-r29" "https://dl.google.com/android/repository/" "android-ndk-r29-linux.zip"
         popd
     fi
-    export ANDROID_NDK_ROOT=${TOOLCHAIN_PREFIX}/android-ndk-r20
+    export ANDROID_NDK_ROOT=${TOOLCHAIN_PREFIX}/android-ndk-r29
 }
 
 
@@ -233,14 +225,19 @@ set_env_vars(){
     export SODIUM_INCLUDE_DIR=${SODIUM_DIR}/include
     export LIBZMQ_LIB_DIR=${LIBZMQ_DIR}/lib
     export LIBZMQ_INCLUDE_DIR=${LIBZMQ_DIR}/include
-    export TOOLCHAIN_DIR=${TOOLCHAIN_PREFIX}/${TARGET_ARCH}
+    export HOST_PF=$(uname | tr '[:upper:]' '[:lower:]') # host platform - linux, darwin, ...
+    export HOST_HW=$(uname -m) # host hardware - x86_64, x86, ...
+    export HOST_TAG=$HOST_PF-$HOST_HW
+    export TOOLCHAIN_DIR=${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/$HOST_TAG
     export PATH=${TOOLCHAIN_DIR}/bin:${PATH}
     export PKG_CONFIG_ALLOW_CROSS=1
-    export CC=${TOOLCHAIN_DIR}/bin/${ANDROID_TRIPLET}-clang
-    export AR=${TOOLCHAIN_DIR}/bin/${ANDROID_TRIPLET}-ar
-    export CXX=${TOOLCHAIN_DIR}/bin/${ANDROID_TRIPLET}-clang++
-    export CXXLD=${TOOLCHAIN_DIR}/bin/${ANDROID_TRIPLET}-ld
-    export RANLIB=${TOOLCHAIN_DIR}/bin/${ANDROID_TRIPLET}-ranlib
+    export CC=${TOOLCHAIN_DIR}/bin/${ANDROID_TRIPLET}${TARGET_API}-clang
+    export CFLAGS="-fPIC"
+    export CXX=${TOOLCHAIN_DIR}/bin/${ANDROID_TRIPLET}${TARGET_API}-clang++
+    export CXXFLAGS="-fPIC"
+    export AR=${TOOLCHAIN_DIR}/bin/llvm-ar
+    export CXXLD=${TOOLCHAIN_DIR}/bin/ld.lld
+    export RANLIB=${TOOLCHAIN_DIR}/bin/llvm-ranlib
     export TARGET=android
     export OPENSSL_STATIC=1
 }

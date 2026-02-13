@@ -56,64 +56,67 @@ normalize_dir(){
 
 setup_dependencies(){
     if [ "${DOWNLOAD_PREBUILTS}" == "1" ]; then
-        setup_dependencies_env_vars ${ABSOLUTE_ARCH}
-        else
-            echo "${BLUE}Not downloading prebuilt dependencies. Dependencies locations have to be passed${RESET}"
-            if [ -z "${OPENSSL_DIR}" ]; then
+        prepare_dependencies $TARGET_ARCH
+        setup_dependencies_env_vars $TARGET_ARCH
+    else
+        echo "${BLUE}Not downloading prebuilt dependencies. Dependencies locations have to be passed${RESET}"
+        if [ -z "${OPENSSL_DIR}" ]; then
 
-                OPENSSL_DIR=$(normalize_dir "openssl_${ABSOLUTE_ARCH}")
-                if [ -d "${OPENSSL_DIR}" ]; then
-                    echo "${GREEN}Found ${OPENSSL_DIR}${RESET}"
-                elif [ -z "$2" ]; then
-                    echo STDERR "${RED}Missing OPENSSL_DIR argument and environment variable${RESET}"
-                    echo STDERR "${BLUE}e.g. set OPENSSL_DIR=<path> for environment or openssl_${ABSOLUTE_ARCH}${RESET}"
-                    exit 1
-                else
-                    OPENSSL_DIR=$2
-                fi
+            OPENSSL_DIR=$(normalize_dir "openssl_${ABSOLUTE_ARCH}")
+            if [ -d "${OPENSSL_DIR}" ]; then
+                echo "${GREEN}Found ${OPENSSL_DIR}${RESET}"
+            elif [ -z "$2" ]; then
+                echo STDERR "${RED}Missing OPENSSL_DIR argument and environment variable${RESET}"
+                echo STDERR "${BLUE}e.g. set OPENSSL_DIR=<path> for environment or openssl_${ABSOLUTE_ARCH}${RESET}"
+                exit 1
+            else
+                OPENSSL_DIR=$2
             fi
+        fi
 
-            if [ -z "${SODIUM_DIR}" ]; then
-                SODIUM_DIR=$(normalize_dir "libsodium_${ABSOLUTE_ARCH}")
-                if [ -d "${SODIUM_DIR}" ] ; then
-                    echo "${GREEN}Found ${SODIUM_DIR}${RESET}"
-                elif [ -z "$3" ]; then
-                    echo STDERR "${RED}Missing SODIUM_DIR argument and environment variable${RESET}"
-                    echo STDERR "${BLUE}e.g. set SODIUM_DIR=<path> for environment or libsodium_${ABSOLUTE_ARCH}${RESET}"
-                    exit 1
-                else
-                    SODIUM_DIR=$3
-                fi
+        if [ -z "${SODIUM_DIR}" ]; then
+            SODIUM_DIR=$(normalize_dir "libsodium_${ABSOLUTE_ARCH}")
+            if [ -d "${SODIUM_DIR}" ] ; then
+                echo "${GREEN}Found ${SODIUM_DIR}${RESET}"
+            elif [ -z "$3" ]; then
+                echo STDERR "${RED}Missing SODIUM_DIR argument and environment variable${RESET}"
+                echo STDERR "${BLUE}e.g. set SODIUM_DIR=<path> for environment or libsodium_${ABSOLUTE_ARCH}${RESET}"
+                exit 1
+            else
+                SODIUM_DIR=$3
             fi
+        fi
 
-            if [ -z "${LIBZMQ_DIR}" ] ; then
-                LIBZMQ_DIR=$(normalize_dir  "libzmq_${ABSOLUTE_ARCH}")
-                if [ -d "${LIBZMQ_DIR}" ] ; then
-                    echo "${GREEN}Found ${LIBZMQ_DIR}${RESET}"
-                elif [ -z "$4" ] ; then
-                    echo STDERR "${RED}Missing LIBZMQ_DIR argument and environment variable${RESET}"
-                    echo STDERR "${BLUE}e.g. set LIBZMQ_DIR=<path> for environment or libzmq_${ABSOLUTE_ARCH}${RESET}"
-                    exit 1
-                else
-                    LIBZMQ_DIR=$4
-                fi
+        if [ -z "${LIBZMQ_DIR}" ] ; then
+            LIBZMQ_DIR=$(normalize_dir  "libzmq_${ABSOLUTE_ARCH}")
+            if [ -d "${LIBZMQ_DIR}" ] ; then
+                echo "${GREEN}Found ${LIBZMQ_DIR}${RESET}"
+            elif [ -z "$4" ] ; then
+                echo STDERR "${RED}Missing LIBZMQ_DIR argument and environment variable${RESET}"
+                echo STDERR "${BLUE}e.g. set LIBZMQ_DIR=<path> for environment or libzmq_${ABSOLUTE_ARCH}${RESET}"
+                exit 1
+            else
+                LIBZMQ_DIR=$4
             fi
-
-
+        fi
     fi
 }
 
 statically_link_dependencies_with_libindy(){
-    echo "${BLUE}Statically linking libraries togather${RESET}"
+    echo "${BLUE}Statically linking libraries together${RESET}"
     echo "${BLUE}Output will be available at ${ANDROID_BUILD_FOLDER}/libindy_${ABSOLUTE_ARCH}/lib/libindy.so${RESET}"
     $CC -v -shared -o${ANDROID_BUILD_FOLDER}/libindy_${ABSOLUTE_ARCH}/lib/libindy.so -Wl,--whole-archive \
         ${WORKDIR}/target/${TRIPLET}/release/libindy.a \
-        ${TOOLCHAIN_DIR}/sysroot/usr/lib/${ANDROID_TRIPLET}/libm.a \
+        ${TOOLCHAIN_DIR}/sysroot/usr/lib/${ANDROID_LIB_TRIPLET}/libm.a \
         ${OPENSSL_DIR}/lib/libssl.a \
         ${OPENSSL_DIR}/lib/libcrypto.a \
         ${SODIUM_LIB_DIR}/libsodium.a \
         ${LIBZMQ_LIB_DIR}/libzmq.a \
-        -Wl,--no-whole-archive -z muldefs -L${TOOLCHAIN_DIR}/sysroot/usr/lib/${ANDROID_TRIPLET}/${TARGET_API} -lz -llog -lc++_shared
+        -Wl,--no-whole-archive \
+        -Wl,-z,max-page-size=16384 \
+        -z muldefs \
+        -L${TOOLCHAIN_DIR}/sysroot/usr/lib/${ANDROID_LIB_TRIPLET}/${TARGET_API} \
+        -lz -llog -lc++_shared
 }
 
 package_library(){
@@ -164,6 +167,7 @@ build(){
 
 generate_arch_flags ${TARGET_ARCH}
 setup_dependencies
+download_and_setup_toolchain
 set_env_vars
 create_standalone_toolchain_and_rust_target
 create_cargo_config

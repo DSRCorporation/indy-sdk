@@ -6,6 +6,7 @@ LIBINDY_WORKDIR=${WORKDIR}
 CI_DIR="${LIBINDY_WORKDIR}/ci"
 BUILD_TYPE="--release"
 export ANDROID_BUILD_FOLDER="/tmp/android_build"
+mkdir -p $ANDROID_BUILD_FOLDER
 
 TARGET_ARCH=$1
 
@@ -39,18 +40,21 @@ build_test_artifacts(){
         # TODO empty for full testing SET_OF_TESTS=''
         SET_OF_TESTS='--test interaction'
 
+        export OPENSSL_NO_UI_CONSOLE=1
+        export OPENSSL_NO_STDIO=1
+
         # TODO move RUSTFLAGS to cargo config and do not duplicate it here
         # build - separate step to see origin build output
-        RUSTFLAGS="-lc -lz -L${LIBZMQ_LIB_DIR} -L${SODIUM_LIB_DIR} -lsodium -lzmq -lc++_shared" \
-            cargo build ${BUILD_TYPE} --target=${TRIPLET}
+        RUSTFLAGS="-Awarnings -lc -lz -L${LIBZMQ_LIB_DIR} -L${SODIUM_LIB_DIR} -lsodium -lzmq -lc++_shared" \
+            cargo build ${BUILD_TYPE} --target=${TRIPLET} || { echo FAILED BUILD 1; exit 1; }
 
         # This is needed to get the correct message if test are not built. Next call will just reuse old results and parse the response.
-        RUSTFLAGS="-lc -lz -L${LIBZMQ_LIB_DIR} -L${SODIUM_LIB_DIR} -lsodium -lzmq -lc++_shared" \
-            cargo test ${BUILD_TYPE} --target=${TRIPLET} ${SET_OF_TESTS} --no-run
+        RUSTFLAGS="-Awarnings -lc -lz -L${LIBZMQ_LIB_DIR} -L${SODIUM_LIB_DIR} -lsodium -lzmq -lc++_shared -L$LIBINDY_WORKDIR/target/$TRIPLET/release" \
+            cargo test ${BUILD_TYPE} --target=${TRIPLET} ${SET_OF_TESTS} --no-run || { echo FAILED BUILD 2; exit 1; }
 
         # collect items to execute tests, uses resulting files from previous step
         EXE_ARRAY=($(
-            RUSTFLAGS="-lc -lz -L${LIBZMQ_LIB_DIR} -L${SODIUM_LIB_DIR} -lsodium -lzmq -lc++_shared" \
+            RUSTFLAGS="-Awarnings -lc -lz -L${LIBZMQ_LIB_DIR} -L${SODIUM_LIB_DIR} -lsodium -lzmq -lc++_shared -L$LIBINDY_WORKDIR/target/$TRIPLET/release" \
                 cargo test ${BUILD_TYPE} --target=${TRIPLET} ${SET_OF_TESTS} --no-run --message-format=json | jq -r "select(.profile.test == true) | .filenames[]"))
     popd
 }
@@ -99,8 +103,11 @@ execute_on_device(){
 
 }
 
-recreate_avd
-setup_dependencies_env_vars ${ABSOLUTE_ARCH}
+#recreate_avd
+echo Expecting an android emulator to run
+prepare_dependencies ${TARGET_ARCH}
+setup_dependencies_env_vars ${TARGET_ARCH}
+download_and_setup_toolchain
 set_env_vars
 create_standalone_toolchain_and_rust_target
 create_cargo_config
